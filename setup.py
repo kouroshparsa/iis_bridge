@@ -1,20 +1,27 @@
 """
 iis_bridge
------
+-----------
+
 iis_bridge is an iis management tool for windows
-````````````
+
+Link
+`````
+
 * Source
-  https://github.com/kouroshparsa/iis_bridge
+  https://github.com/kouroshparsa/
+
 """
 from setuptools import Command, setup, find_packages
 
 
 setup(
     name='iis_bridge',
-    version='1.0-dev',
+    version='0.1',
     url='https://github.com/kouroshparsa/iis_bridge',
+    download_url='https://github.com/kouroshparsa/iis_bridge/packages/0.1',
     license='GNU',
     author='Kourosh Parsa',
+    author_email="kouroshtheking@gmail.com",
     description='an iis management tool for windows',
     long_description=__doc__,
     packages=find_packages(),
@@ -24,14 +31,9 @@ setup(
     install_requires=[
     ],
     classifiers=[
-        'Development Status :: Beta',
         'Environment :: Web Environment',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU License',
-        'Operating System :: Windows',
+        'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-        'Topic :: Software Development :: Libraries :: Python Modules'
+        'Programming Language :: Python :: 2.7'
     ]
 )
