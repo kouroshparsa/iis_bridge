@@ -28,15 +28,15 @@ def enable():
                     % (APP_CMD, path))
                 path = "%windir%\\Microsoft.NET\\%s\\v4.0.30319\\aspnet_isapi.dll" % framework
                 run("%s set configcommit:apphost /section:isapiCgiRestriction /+[path='%s',allowed='True']"\
-                    % APP_CMD, path)
+                    % (APP_CMD, path))
 
-    if(not has_isapi):
+    if not has_isapi:
         path = "%windir%\\Microsoft.Net\\Framework\\v4.0.30319\\aspnet_isapi.dll"
         run("%s set config /commit:apphost /section:isapiCgiRestriction /+[path='%s',allowed='True']"\
             % (APP_CMD, path))
 
 
-    if(not has_isapi64):
+    if not has_isapi64:
         path = "%windir%\\Microsoft.Net\\Framework64\\v4.0.30319\\aspnet_isapi.dll"
         run("%s set config /commit:apphost /section:isapiCgiRestriction /+[path='%s',allowed='True']"\
             % (APP_CMD, path))

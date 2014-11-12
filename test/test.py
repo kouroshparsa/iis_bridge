@@ -2,7 +2,7 @@
     This module displays common usage of the package
     :copyright: (c) 2014 by Kourosh Parsa.
 """
-import iis_bridge
+import iis_bridge as iis
 from iis_bridge import pool
 from iis_bridge import site
 from iis_bridge import isapi
@@ -13,7 +13,7 @@ from iis_bridge import isapi
 #pool.config("abc", ping_enabled=True, ping_period=40, ping_response_time=35)
 #isapi.enable()
 #pool.restart("abc")
-#iis_bridge.iisreset()
+#iis.iisreset()
 #pool.delete("abc")
 
 #site.create("abc", 303, "C:\\inetpub\wwwroot\\abc", "abc")

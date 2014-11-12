@@ -29,11 +29,11 @@ def is_port_taken(port):
     return "/*:%s:," % port in output
 
 
-def get_site_port(site_name):
+def get_port(site_name):
     """ Given the iis site name
     it returns the port number of the site - integer
     """
-    cmd = "%s list sites|findstr %s" % (APP_CMD, site_name)
+    cmd = "%s list sites|findstr \"%s\"" % (APP_CMD, site_name)
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     output, err = proc.communicate()
     if proc.returncode != 0:
@@ -41,6 +41,24 @@ def get_site_port(site_name):
             % (site_name, err))
     port = output.split(":")[3]
     return int(port)
+
+
+def get_url(site_name):
+    """ Given the iis site name
+    it returns the site url
+    """
+    cmd = "%s list sites|findstr \"%s\"" % (APP_CMD, site_name)
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    output, err = proc.communicate()
+    if proc.returncode != 0:
+        raise RuntimeError("The site [%s] does not exist. %s"\
+            % (site_name, err))
+    protocol = "http"
+    if "https" in output:
+        protocol = "https"
+    port = output.split(":")[3]
+    url = "%s://localhost:%s" % (protocol, port)
+    return url
 
 
 def exists(name):

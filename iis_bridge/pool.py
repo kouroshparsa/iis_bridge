@@ -33,7 +33,7 @@ def create(name, runtime_version="4.0", pipeline_mode="Integrated"):
 
     if pipeline_mode not in PIPELINE_MODES:
         raise Exception("Invalid pipeline mode: %s" % pipeline_mode)
-    
+
     cmd = "%s /managedPipelineMode:%s" % (cmd, pipeline_mode)
     run(cmd)
 
@@ -51,7 +51,7 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
     - private_mem: private memory limit in KB
     - max_proc: maximum number of worker processes
     - thirty_two_bit: boolean, whether to enable 32bit support
-    - recycle_after_time: pool recycle time interval (in minutes) 
+    - recycle_after_time: pool recycle time interval (in minutes)
     - recycle_at_time: the specific time to recycle the pool
     - runtime_version: .Net framework version
     - worker_idle_timeout: timeout of pool workers being idle in minutes
@@ -88,7 +88,7 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
         cmd = "%s set apppool \"/apppool.name:%s\" /-recycling.periodicRestart.schedule"\
               % (APP_CMD, name)
         run(cmd)
-        
+
         cmd = "%s set apppool \"/apppool.name:%s\" /+recycling.periodicRestart.schedule.[value='%s']"\
               % (APP_CMD, name, str(recycle_at_time))
         run(cmd)
@@ -106,11 +106,13 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
 
     if identity:
         if identity not in IDENTITIES:
-            raise Exception("Invalid Identity: %s. Choose from:" % (identity, IDENTITIES))
+            raise Exception("Invalid Identity: %s. "\
+                "Choose from:" % (identity, IDENTITIES))
         if identity == "Custom":
             if not (username and password):
-                raise Exception("Please specify a username and a password for custom identity.")
-        
+                raise Exception("Please specify a username "\
+                    "and a password for custom identity.")
+
             cmd = "%s set config /section:applicationPools" \
                     " \"/[name='%s'].processModel.identityType:SpecificUser\""\
                     " \"/[name='%s'].processModel.userName:%s\""\
