@@ -16,9 +16,9 @@ from setuptools import Command, setup, find_packages
 
 setup(
     name='iis_bridge',
-    version='0.3',
+    version='0.4',
     url='https://github.com/kouroshparsa/iis_bridge',
-    download_url='https://github.com/kouroshparsa/iis_bridge/packages/0.3',
+    download_url='https://github.com/kouroshparsa/iis_bridge/packages/0.4',
     license='GNU',
     author='Kourosh Parsa',
     author_email="kouroshtheking@gmail.com",
@@ -27,6 +27,7 @@ setup(
     packages=find_packages(),
     install_requires = ['Jinja2>=2.7.3'],
     include_package_data=True,
+    package_data = {'iis_bridge': ['templates/*.html']},
     zip_safe=False,
     platforms='windows',
     classifiers=[

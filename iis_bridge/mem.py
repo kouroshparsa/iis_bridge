@@ -54,6 +54,11 @@ def get_workers(mem_type=MEM_TYPES[0], mem_unit='KB'):
     """ returns a list of Worker objects
     """
     workers = []
+    cmd = "sc query w3svc"
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    output = proc.communicate()[0]
+    if not "RUNNING" in output:
+        config.run("sc start w3svc")
     cmd = "%s list wps" % config.APP_CMD
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     output = proc.communicate()[0]

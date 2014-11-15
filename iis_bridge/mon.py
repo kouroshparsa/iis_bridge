@@ -60,7 +60,7 @@ def monitor_with_load(iterations, urls, rate,\
 
 
 def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
-         output_path=os.path.join(BASE_DIR, 'out.html')):
+         output_path='out.html'):
     """ produces an html report
     datasets: the data to plot along with labels
     mem_type: (optional) what type of memory you'd like to monitor
@@ -78,6 +78,7 @@ def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
     out_file = open(output_path, 'w')
     out_file.write(out)
     out_file.close()
+    print "The html report is saved to %s" % os.path.realpath(output_path)
 
 
 if __name__ == "__main__":
