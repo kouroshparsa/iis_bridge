@@ -2,7 +2,13 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 	<title></title>
 	<style media="screen" type="text/css">
-*{padding:0;margin:0;vertical-align:top}body{font:18px/1.5em proxima-nova,Helvetica,Arial,sans-serif}a{color:#069}a:hover{color:#28b}h2{margin-top:15px;font:400 32px omnes-pro,Helvetica,Arial,sans-serif}h3{margin-left:30px;font:400 26px omnes-pro,Helvetica,Arial,sans-serif;color:#666}p{margin-top:10px}button{font-size:18px;padding:1px 7px}input{font-size:18px}input[type=checkbox]{margin:7px}#header{position:relative;width:900px;margin:auto}#header h2{margin-left:10px;vertical-align:middle;font-size:42px;font-weight:700;text-decoration:none;color:#000}#content{width:880px;margin:0 auto;padding:10px}#footer{margin-top:25px;margin-bottom:10px;text-align:center;font-size:12px;color:#999}.demo-container{box-sizing:border-box;width:850px;height:450px;padding:20px 15px 15px;margin:15px auto 30px;border:1px solid #ddd;background:#fff;background:linear-gradient(#f6f6f6 0,#fff 50px);background:-o-linear-gradient(#f6f6f6 0,#fff 50px);background:-ms-linear-gradient(#f6f6f6 0,#fff 50px);background:-moz-linear-gradient(#f6f6f6 0,#fff 50px);background:-webkit-linear-gradient(#f6f6f6 0,#fff 50px);box-shadow:0 3px 10px rgba(0,0,0,.15);-o-box-shadow:0 3px 10px rgba(0,0,0,.1);-ms-box-shadow:0 3px 10px rgba(0,0,0,.1);-moz-box-shadow:0 3px 10px rgba(0,0,0,.1);-webkit-box-shadow:0 3px 10px rgba(0,0,0,.1)}
+*{padding:0;margin:0;vertical-align:top}body{font:18px/1.5em proxima-nova,Helvetica,Arial,sans-serif}a{color:#069}a:hover{color:#28b}h2{margin-top:15px;font:400 32px omnes-pro,Helvetica,Arial,sans-serif}h3{margin-left:30px;font:400 26px omnes-pro,Helvetica,Arial,sans-serif;color:#666}p{margin-top:10px}button{font-size:18px;padding:1px 7px}input{font-size:18px}input[type=checkbox]{margin:7px}#header{position:relative;width:900px;margin:auto}#header h2{margin-left:10px;vertical-align:middle;font-size:42px;font-weight:700;text-decoration:none;color:#000}
+
+#content{width:1280px;margin:0 auto;padding:30px;float:left}
+#footer{margin-top:25px;margin-bottom:10px;text-align:center;font-size:12px;color:#999}
+
+.demo-container{box-sizing:border-box;width:100%;height:450px;padding:20px 15px 15px;margin:15px auto 30px;border:1px solid #ddd;background:#fff;background:linear-gradient(#f6f6f6 0,#fff 50px);background:-o-linear-gradient(#f6f6f6 0,#fff 50px);background:-ms-linear-gradient(#f6f6f6 0,#fff 50px);background:-moz-linear-gradient(#f6f6f6 0,#fff 50px);background:-webkit-linear-gradient(#f6f6f6 0,#fff 50px);box-shadow:0 3px 10px rgba(0,0,0,.15);-o-box-shadow:0 3px 10px rgba(0,0,0,.1);-ms-box-shadow:0 3px 10px rgba(0,0,0,.1);-moz-box-shadow:0 3px 10px rgba(0,0,0,.1);-webkit-box-shadow:0 3px 10px rgba(0,0,0,.1)}
+
 .demo-placeholder{width:100%;height:100%;font-size:14px;line-height:1.2em}
 .legend table{border-spacing:5px}
 
@@ -33,7 +39,7 @@
     -webkit-transform-origin: 0 0;
 }
 
-.choices { border:4px solid #ccc; width:300px; height: 150px; overflow-y: scroll; }
+.choices { border:4px solid #ccc; width:600px; height: 150px; overflow-y: scroll; }
 
 	</style>
 	<script type="text/javascript">
@@ -119,12 +125,11 @@ return a.setAttribute("type",b),c&&(a.value=c),b}}}}}),Zb={set:function(a,b,c){r
 			<div id="placeholder" class="demo-placeholder" style="float: left; width: 675px; padding: 0px; position: relative;">
 				<canvas class="flot-base" width="675" height="413" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 675px; height: 413px;"></canvas>
 				<canvas class="flot-overlay" width="675" height="413" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 675px; height: 413px;"></canvas>
-				<div class="axisLabel yaxisLabel" style="margin-top: 35.5px;">Response Time (ms)</div>
 				<div class="legend">
 					<div style="position: absolute; width: 80px; height: 152px; top: 13px; right: 17px; opacity: 0.85; background-color: rgb(255, 255, 255);"></div>
 				</div>
 			</div>
-			<div id="legendContainer" style="float: left"></div>
+			<div id="legendContainer" style="float: left;width:500px;overflow-x: scroll;"></div>
 		</div>
 		<div class="choices" id="choices" style="float:bottom; "/>
 	</div>

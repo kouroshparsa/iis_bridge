@@ -57,7 +57,7 @@ def get_url(site_name):
     if "https" in output:
         protocol = "https"
     port = output.split(":")[3]
-    url = "%s://localhost:%s" % (protocol, port)
+    url = "%s://localhost:%s/" % (protocol, port)
     return url
 
 
