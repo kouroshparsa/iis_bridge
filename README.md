@@ -28,7 +28,7 @@ print iis.get_site_names()
 ```
 
 Here is an example how to monitor the private working set memory of all the application pools for 6 seconds while sending 12 GET http requests per second.
-The http_report method generages an out.html in the current directory. You can specify output path using the output_path parameter.
+The http_report method generates an out.html memory report in the current directory. You can specify output path using the output_path parameter.
 ```
 import iis_bridge.mon as mon
 datasets = mon.monitor_with_load(6, 'all', 12)
