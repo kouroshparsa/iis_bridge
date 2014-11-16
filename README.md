@@ -6,7 +6,7 @@ A python package for manipulating iis and monitoring iis pools' memory on window
 How to install:
 `pip install iis_bridge`
 
-You must run python in a terminal with administrator pivileges in order to use most of the iis operations.
+You must run python in a terminal with **administrator pivileges** in order to use this package successfully.
 
 Examples:
 ```
