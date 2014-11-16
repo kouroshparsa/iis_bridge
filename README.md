@@ -1,4 +1,36 @@
 iis_bridge
 ==========
 
-A python package for manipulating iis on windows
+A python package for manipulating iis and monitoring iis pools' memory on windows
+
+How to install:
+`pip install iis_bridge`
+
+You must run python in a terminal with administrator pivileges in order to use most of the iis operations.
+
+Examples:
+```
+import iis_bridge as iis
+# to install iis:
+iis.install()
+
+print "iis version %s" % iis.get_version()
+
+# to reset iis:
+iis.iisreset()
+
+# to add an iis site on port 5050:
+import iis_bridge.site as site
+site.create("mysite", 5050, "C:\inetpub\wwwroot\myapp", "mypool")
+
+# now to list the site names:
+print iis.get_site_names()
+```
+
+Here is an example how to monitor the private working set memory of all the application pools for 6 seconds while sending 12 GET http requests per second.
+The http_report method generages an out.html in the current directory. You can specify output path using the output_path parameter.
+```
+import iis_bridge.mon as mon
+datasets = mon.monitor_with_load(6, 'all', 12)
+mon.html_report(datasets)
+```

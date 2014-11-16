@@ -4,6 +4,7 @@
 """
 from iis_bridge.config import *
 import iis_bridge
+from iis_bridge import pool as pool
 import subprocess
 
 def is_port_available(port):
@@ -73,12 +74,12 @@ def exists(name):
     return False
 
 
-def create(name, port, path, pool, protocol="http", site_id=None):
+def create(name, port, path, pool_name, protocol="http", site_id=None):
     """ creates a new iis site
     Parameters:
     - name: site name
     - port: port number
-    - pool: pool name to associate with the site
+    - pool_name: pool name to associate with the site
     - protocol (optional): http, https
     - site_id (optional): the site id to associate with the new site
     """
@@ -91,8 +92,8 @@ def create(name, port, path, pool, protocol="http", site_id=None):
     if is_port_available(port):
         raise Exception("A program is already using the port: %i" % port)
 
-    if not iis_bridge.pool.exists(pool):
-        iis_bridge.pool.create(pool)
+    if not pool.exists(pool_name):
+        pool.create(pool_name)
 
     cmd = "%s add site /name:\"%s\" /physicalPath:\"%s\" /bindings:%s/*:%i:"\
           % (APP_CMD, name, path, protocol, port)
@@ -100,7 +101,7 @@ def create(name, port, path, pool, protocol="http", site_id=None):
         cmd = "%s /id:%i" % (cmd, site_id)
     run(cmd)
     run("%s set app \"%s/\" /applicationPool:\"%s\""\
-        % (APP_CMD, name, pool))
+        % (APP_CMD, name, pool_name))
 
 
 def delete(name):

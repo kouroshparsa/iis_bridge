@@ -5,17 +5,17 @@
 import os
 import sys
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-template_file = os.path.join(\
+TEMPLATE_FILE = os.path.join(\
     BASE_DIR, 'templates', 'template1.html')
 sys.path.append(os.path.realpath("%s/.." % BASE_DIR))
 import iis_bridge as iis
 from jinja2 import Environment as JinjaEnvironment
 import time
-import mem as mem
+import iis_bridge.mem as mem
 import iis_bridge.load_gen as load_gen
 import iis_bridge.site as site
 
-def monitor(delta=0.5, total_length=10,\
+def monitor(delta=1, total_length=10,\
         mem_type='WorkingSetPrivate', mem_unit='KB'):
     """ monitors app pools
     Parameters:
@@ -49,11 +49,12 @@ def monitor_with_load(iterations, urls, rate,\
     """
     if urls == 'all':
         urls = [site.get_url(name) for name in iis.get_site_names()]
-    http_thread = load_gen.HttpFlood(iterations, urls, rate)
+    interval = 1 # per second
+    http_thread = load_gen.HttpFlood(iterations, urls, rate, interval=interval)
     http_thread.start()
     print "Starting to send http requests and monitor the memory usage..."
     datasets = monitor(total_length=iterations,\
-        mem_type=mem_type, mem_unit=mem_unit)
+        mem_type=mem_type, mem_unit=mem_unit, delta=interval)
     http_thread.join()
     print "Failed requests: %i" % http_thread.failed_reqs
     return datasets
@@ -72,7 +73,7 @@ def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
         'xlabel': 'time (seconds)',
         'ylabel': '%s (%s)' % (mem_type, mem_unit)
     }
-    source = open(template_file, 'r').read()
+    source = open(TEMPLATE_FILE, 'r').read()
     jinja_template = JinjaEnvironment().from_string(source)
     out = jinja_template.render(context)
     out_file = open(output_path, 'w')
@@ -84,6 +85,6 @@ def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
 if __name__ == "__main__":
     mem_type = 'WorkingSetPrivate'
     mem_unit = 'MB'
-    datasets = monitor_with_load(14, 'all', 8,\
+    datasets = monitor_with_load(6, 'all', 8,\
         mem_type=mem_type, mem_unit=mem_unit)
     html_report(datasets, mem_type=mem_type, mem_unit=mem_unit)
