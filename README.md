@@ -21,7 +21,7 @@ iis.iisreset()
 
 # to add an iis site on port 5050:
 import iis_bridge.site as site
-site.create("mysite", 5050, "C:\inetpub\wwwroot\myapp", "mypool")
+site.create("mysite", 5050, r"C:\inetpub\wwwroot\myapp", "mypool")
 
 # now to list the site names:
 print iis.get_site_names()
