@@ -16,9 +16,9 @@ from setuptools import Command, setup, find_packages
 
 setup(
     name='iis_bridge',
-    version='0.6',
+    version='0.7',
     url='https://github.com/kouroshparsa/iis_bridge',
-    download_url='https://github.com/kouroshparsa/iis_bridge/packages/0.6',
+    download_url='https://github.com/kouroshparsa/iis_bridge/packages/0.7',
     license='GNU',
     author='Kourosh Parsa',
     author_email="kouroshtheking@gmail.com",

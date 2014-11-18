@@ -4,6 +4,7 @@
 """
 import os
 import sys
+import copy
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 TEMPLATE_FILE = os.path.join(\
     BASE_DIR, 'templates', 'template1.html')
@@ -23,16 +24,23 @@ def monitor(delta=1, total_length=10,\
     total_length: total duration in seconds
     """
     datasets = {}
-
+    POOL_NAMES = iis.get_pool_names()
     for t in range(total_length):
         workers = mem.get_workers(mem_type=mem_type, mem_unit=mem_unit)
         t2 = delta * t
+        pools_without_workers = copy.copy(POOL_NAMES)
         for worker in workers:
+            pools_without_workers.remove(worker.poolname)
             if not datasets.has_key(worker.poolname):
                 datasets[worker.poolname] =\
                     {'label': worker.poolname, 'data': []}
             datasets[worker.poolname]['data'].append(\
                 [t2, worker.mem])
+        for p in pools_without_workers:
+            if datasets.has_key(p):
+                datasets[p]['data'].append([t2, 0])
+            else:
+                datasets[p] = {'label': p, 'data': [[t2, 0]]}
         time.sleep(delta)
     return datasets
 
@@ -50,7 +58,8 @@ def monitor_with_load(iterations, urls, rate,\
     if urls == 'all':
         urls = [site.get_url(name) for name in iis.get_site_names()]
     interval = 1 # per second
-    http_thread = load_gen.HttpFlood(iterations, urls, rate, interval=interval)
+    http_thread = load_gen.HttpFlood(iterations,\
+        urls, rate, interval=interval)
     http_thread.start()
     print "Starting to send http requests and monitor the memory usage..."
     datasets = monitor(total_length=iterations,\

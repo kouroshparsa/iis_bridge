@@ -3,6 +3,7 @@
     :copyright: (c) 2014 by Kourosh Parsa.
 """
 from iis_bridge.config import *
+import time
 
 def exists(name):
     """ given the pool name, returns whether
@@ -36,6 +37,7 @@ def create(name, runtime_version="4.0", pipeline_mode="Integrated"):
 
     cmd = "%s /managedPipelineMode:%s" % (cmd, pipeline_mode)
     run(cmd)
+    time.sleep(1) # some appcmd commands fail without this delay
 
 
 def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\

@@ -6,6 +6,7 @@ from iis_bridge.config import *
 import iis_bridge
 from iis_bridge import pool as pool
 import subprocess
+import time
 
 def is_port_available(port):
     """ returns a boolean indicating whether the port is
@@ -79,6 +80,7 @@ def create(name, port, path, pool_name, protocol="http", site_id=None):
     Parameters:
     - name: site name
     - port: port number
+    - path: the directory where your web app is
     - pool_name: pool name to associate with the site
     - protocol (optional): http, https
     - site_id (optional): the site id to associate with the new site
@@ -102,6 +104,7 @@ def create(name, port, path, pool_name, protocol="http", site_id=None):
     run(cmd)
     run("%s set app \"%s/\" /applicationPool:\"%s\""\
         % (APP_CMD, name, pool_name))
+    time.sleep(1) # some appcmd commands fail without this delay
 
 
 def delete(name):

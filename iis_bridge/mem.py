@@ -12,7 +12,7 @@ class Worker():
         mem_type=MEM_TYPES[0], mem=None):
         self.poolname = poolname
         self.pid = int(pid)
-        self.mem = int(mem)
+        self.mem = float(mem)
         self.mem_type = mem_type
     def __str__(self):
         return "%s: pid=%i %s=%i" %\

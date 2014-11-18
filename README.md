@@ -1,12 +1,18 @@
 iis_bridge
 ==========
 
-A python package for manipulating iis and monitoring iis pools' memory on windows
+is_bridge is a python package for manipulating iis and monitoring iis pools' memory on windows.
+It has been tested with python 2.7 on:
+- windows server 2008 32 bit
+- windows server 2008 R2
+- windows server 2012
+- windows 7
+- windows 8
 
 How to install:
 `pip install iis_bridge`
 
-You must run python in a terminal with **administrator pivileges** in order to use this package successfully.
+You must run python in a terminal with **administrator privileges** in order to use this package successfully.
 
 Examples:
 ```

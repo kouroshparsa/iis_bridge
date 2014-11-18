@@ -7,11 +7,19 @@ import sys
 import os
 import subprocess
 import _winreg
+import platform
 
 def iisreset():
     """ resets iis
     """
     config.run('iisreset')
+
+
+def is_running(name):
+    """ returns a boolean indicating whether iis is running
+    """
+    return get_status() == "running"
+
 
 def get_status():
     """ gets the iis status {stopped, running} """
@@ -40,18 +48,33 @@ def install(packages=None):
     """ installs iis
     Parameters
     --------
-    packages: string. The iis feature (package) names separated by semicolon
+    packages: list. The iis features (package names)
     """
     if sys.getwindowsversion().major < 6 or \
         (sys.getwindowsversion().major == 6 \
         and sys.getwindowsversion().minor < 1):
         raise Exception("iis install is not yet supported "\
             "on windows older than windows server 2008 R2")
-        # because pkgmgr is not supported on platforms before win2k8 R2
-        #config.run("start /w pkgmgr /iu:Web-Server")
-    else:
-        config.run("start /w pkgmgr /iu:IIS-WebServerRole;WAS-WindowsActivationService;WAS-ProcessModel;WAS-NetFxEnvironment;WAS-ConfigurationAPI")
-
+    # for windows vista and up (windows 7, windows 8, windows server 2012):
+    dism_pkgs = ["IIS-WebServerRole", "IIS-WebServer", "IIS-CommonHttpFeatures",\
+                 "IIS-Security", "IIS-RequestFiltering", "IIS-StaticContent",\
+                 "IIS-DefaultDocument", "IIS-DirectoryBrowsing", "IIS-HttpErrors",\
+                 "IIS-HttpRedirect", "IIS-WebDAV", "IIS-ApplicationDevelopment",\
+                 "IIS-WebSockets", "IIS-ApplicationInit", "IIS-NetFxExtensibility",\
+                 "IIS-NetFxExtensibility45", "IIS-ISAPIExtensions", "IIS-ISAPIFilter",\
+                 "IIS-ASPNET", "IIS-ASPNET45", "IIS-ASP", "IIS-CGI", "IIS-ServerSideIncludes",\
+                 "IIS-HealthAndDiagnostics", "IIS-HttpLogging", "IIS-LoggingLibraries",\
+                 "IIS-RequestMonitor", "IIS-HttpTracing", "IIS-CustomLogging",\
+                 "IIS-ODBCLogging", "IIS-CertProvider", "IIS-BasicAuthentication",\
+                 "IIS-WindowsAuthentication", "IIS-DigestAuthentication",\
+                 "IIS-ClientCertificateMappingAuthentication", "IIS-IISCertificateMappingAuthentication",\
+                 "IIS-URLAuthorization", "IIS-IPSecurity", "IIS-Performance", "IIS-HttpCompressionStatic",\
+                 "IIS-HttpCompressionDynamic", "IIS-WebServerManagementTools", "IIS-ManagementConsole",\
+                 "IIS-LegacySnapIn", "IIS-ManagementScriptingTools", "IIS-ManagementService",\
+                 "IIS-IIS6ManagementCompatibility", "IIS-Metabase", "IIS-WMICompatibility",\
+                 "IIS-LegacyScripts", "IIS-FTPServer", "IIS-FTPSvc", "IIS-FTPExtensibility",\
+                 "WAS-WindowsActivationService", "WAS-ProcessModel", "WAS-NetFxEnvironment",\
+                 "WAS-ConfigurationAPI", "IIS-HostableWebCore"]
     professional_pkg = "IIS-WebServerRole;IIS-WebServer;IIS-CommonHttpFeatures;IIS-StaticContent;IIS-DefaultDocument;IIS-DirectoryBrowsing;"\
         "IIS-HttpErrors;IIS-HttpRedirect;IIS-ApplicationDevelopment;IIS-ASPNET;IIS-NetFxExtensibility;IIS-ASP;IIS-CGI;"\
         "IIS-ISAPIExtensions;IIS-ISAPIFilter;IIS-ServerSideIncludes;IIS-HealthAndDiagnostics;IIS-HttpLogging;IIS-LoggingLibraries;"\
@@ -72,8 +95,20 @@ def install(packages=None):
         "IIS-IIS6ManagementCompatibility;IIS-Metabase;IIS-WMICompatibility;IIS-LegacyScripts;IIS-LegacySnapIn;"\
         "WAS-WindowsActivationService;WAS-ProcessModel;WAS-NetFxEnvironment;WAS-ConfigurationAPI"
 
-    if packages:
-        config.run("start /w pkgmgr /iu:%s" % packages)
+    if config.DISM:
+        if not packages:
+            packages = dism_pkgs
+        for pkg in packages:
+            if platform.machine().endswith('64'):
+                config.run("%s /online /Enable-Feature /FeatureName:%s /All"\
+                    % (config.DISM, pkg))
+            else:
+                config.run("%s /online /Enable-Feature /FeatureName:%s /All"\
+                    % (config.DISM, pkg))
+    elif packages:
+        if type(packages) == list:
+            packages_str = ";".join(packages)
+        config.run("start /w pkgmgr /iu:%s" % packages_str)
     else:
         cmd = "start /w pkgmgr /iu:%s" % professional_pkg
         proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -88,8 +123,8 @@ def install(packages=None):
 
 def register_asp():
     """ installs and registers asp.net on iis """
-    framework_dir = "%s\\Windows\\Microsoft.NET\\Framework"\
-        % os.getenv('SYSTEMDRIVE')
+    framework_dir = "%s\\Framework"\
+        % (config.NET_DIR, os.getenv('SYSTEMDRIVE'))
     versions = ["v2.0.50727", "v4.0.30319"]
     for ver in versions:
         aspnet_regiis = os.path.join(framework_dir, ver, 'aspnet_regiis.exe')
@@ -102,7 +137,7 @@ def register_asp():
         else:
             print "Could not register %s because the file is missing: %s"\
                 % (ver, aspnet_regiis)
-        config.run("dism.exe /Online /Enable-Feature /all /FeatureName:IIS-ASPNET45")
+        config.run("%s /Online /Enable-Feature /all /FeatureName:IIS-ASPNET45" % config.DISM)
 
 
 def get_version():
@@ -133,4 +168,21 @@ def get_site_names():
     if proc.returncode != 0:
         raise Exception("You need elevated permissions.")
     return [line.split('"')[1] for line in output.splitlines()]
+
+
+def install_wcf(components="all"):
+    """ install wcf services
+    Parameters
+    components: (optional string or list) default=all, are the components of wcf to install
+    """
+    VALID_COMPS = ["WCF-Services45", "WCF-HTTP-Activation45",\
+        "WCF-TCP-Activation45", "WCF-Pipe-Activation45",\
+        "WCF-MSMQ-Activation45", "WCF-TCP-PortSharing45",\
+        "WCF-HTTP-Activation", "WCF-NonHTTP-Activation"]
+    if components == "all":
+        install(VALID_COMPS)
+    else:
+        if type(components) == str:
+            components = [components]
+        install(components)
 
