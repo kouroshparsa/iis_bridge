@@ -40,3 +40,5 @@ import iis_bridge.mon as mon
 datasets = mon.monitor_with_load(6, 'all', 12)
 mon.html_report(datasets)
 ```
+
+There is a more detailed documentation at: https://pythonhosted.org/iis_bridge/
