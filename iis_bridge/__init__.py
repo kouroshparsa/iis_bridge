@@ -44,17 +44,21 @@ def start():
         config.run('iisreset /start')
 
 
+def is_older_than_2008r2():
+    """ returns a boolean indicating whether
+    the platform is older than windows server 2008 R2 """
+    return sys.getwindowsversion().major < 6 or \
+        (sys.getwindowsversion().major == 6 \
+        and sys.getwindowsversion().minor < 1)
+
+
 def install(packages=None):
     """ installs iis
     Parameters
     --------
     packages: list. The iis features (package names)
     """
-    if sys.getwindowsversion().major < 6 or \
-        (sys.getwindowsversion().major == 6 \
-        and sys.getwindowsversion().minor < 1):
-        raise Exception("iis install is not yet supported "\
-            "on windows older than windows server 2008 R2")
+
     # for windows vista and up (windows 7, windows 8, windows server 2012):
     dism_pkgs = ["IIS-WebServerRole", "IIS-WebServer", "IIS-CommonHttpFeatures",\
                  "IIS-Security", "IIS-RequestFiltering", "IIS-StaticContent",\
@@ -95,21 +99,32 @@ def install(packages=None):
         "IIS-IIS6ManagementCompatibility;IIS-Metabase;IIS-WMICompatibility;IIS-LegacyScripts;IIS-LegacySnapIn;"\
         "WAS-WindowsActivationService;WAS-ProcessModel;WAS-NetFxEnvironment;WAS-ConfigurationAPI"
 
-    if config.DISM:
+    if is_older_than_2008r2():
+        if not packages:
+            packages = ["Web-Server"]
+        for pkg in packages:
+            try:
+                config.run("%s -install %s" % (config.SERVER_MGR_CMD, pkg))
+                print "Installed %s -allSubFeatures " % pkg
+            except Exception as ex:
+                if "NoChange" in str(ex):
+                    print "%s is already installed." % pkg
+                else:
+                    raise Exception(str(ex))
+    elif config.DISM:
         if not packages:
             packages = dism_pkgs
         for pkg in packages:
-            if platform.machine().endswith('64'):
-                config.run("%s /online /Enable-Feature /FeatureName:%s /All"\
+            config.run("%s /online /Enable-Feature /FeatureName:%s /All"\
                     % (config.DISM, pkg))
-            else:
-                config.run("%s /online /Enable-Feature /FeatureName:%s /All"\
-                    % (config.DISM, pkg))
+            print "Installed %s" % pkg
     elif packages:
         if type(packages) == list:
             packages_str = ";".join(packages)
+        print "Installing %s" % packages_str
         config.run("start /w pkgmgr /iu:%s" % packages_str)
     else:
+        print "Installing %s" % professional_pkg
         cmd = "start /w pkgmgr /iu:%s" % professional_pkg
         proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         proc.wait()
@@ -173,8 +188,12 @@ def get_site_names():
 def install_wcf(components="all"):
     """ install wcf services
     Parameters
-    components: (optional string or list) default=all, are the components of wcf to install
+    components: (optional string or list) default=all,
+    are the components of wcf to install
     """
+    if is_older_than_2008r2():
+        raise Exception("WCF is not supported on windows "\
+                        "older than win server 2008 R2")
     VALID_COMPS = ["WCF-Services45", "WCF-HTTP-Activation45",\
         "WCF-TCP-Activation45", "WCF-Pipe-Activation45",\
         "WCF-MSMQ-Activation45", "WCF-TCP-PortSharing45",\

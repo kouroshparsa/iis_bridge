@@ -21,10 +21,12 @@ if platform.machine().endswith("64") and\
     DISM = "%s\\Windows\sysnative\\Dism.exe" % os.getenv("SYSTEMDRIVE")
     CONFIG_DIR = "%s\\Windows\\sysnative\\inetsrv\\config" % os.getenv("SYSTEMDRIVE")
     WMIC = "%s\\Windows\\sysnative\\wbem\\wmic.exe" % os.getenv('SYSTEMDRIVE')
+    SERVER_MGR_CMD = "%s\\windows\\sysnative\\ServerManagerCmd.exe" % os.getenv('SYSTEMDRIVE')
 else:
     DISM = "%s\\Windows\System32\\Dism.exe" % os.getenv("SYSTEMDRIVE")
     CONFIG_DIR = "%s\\Windows\\System32\\inetsrv\\config" % os.getenv("SYSTEMDRIVE")
     WMIC = "%s\\Windows\\system32\\wbem\\wmic.exe" % os.getenv('SYSTEMDRIVE')
+    SERVER_MGR_CMD = "%s\\windows\\system32\\ServerManagerCmd.exe" % os.getenv('SYSTEMDRIVE')
 
 if not os.path.exists(DISM):
     DISM = None
