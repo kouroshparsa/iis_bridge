@@ -4,7 +4,8 @@
 """
 from iis_bridge.config import *
 import time
-
+IDENTITIES = ["ApplicationPoolIdentity", "LocalService", "LocalSystem", "NetworkService", "SpecificUser"]
+    
 def exists(name):
     """ given the pool name, returns whether
     the pool already exists
@@ -42,7 +43,7 @@ def create(name, runtime_version="4.0", pipeline_mode="Integrated"):
 
 def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
            recycle_after_time=None, recycle_at_time=None,\
-           runtime_version=None, worker_idle_timeout=None,\
+           runtime_version=None, idle_timeout=None,\
            identity=None, username=None, password=None,\
            pipeline_mode=None, loadUserProfile=None,
            ping_enabled=None, ping_period=None, ping_response_time=None):
@@ -56,10 +57,10 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
     - recycle_after_time: pool recycle time interval (in minutes)
     - recycle_at_time: the specific time to recycle the pool
     - runtime_version: .Net framework version
-    - worker_idle_timeout: timeout of pool workers being idle in minutes
-    - identity: type pf identity pool
-    - username: username for customer identity
-    - password: password for customer identity
+    - idle_timeout: timeout of pool workers being idle in minutes
+    - identity: type of identity pool
+    - username: username for specific user
+    - password: password for specific user
     - pipeline_mode: Integrated, Classic
     - loadUserProfile: boolean - whether to load user profile
     - ping_enabled: boolean - whether to enable ping
@@ -76,7 +77,7 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
           % (APP_CMD, name, max_proc)
         run(cmd)
 
-    if thirty_two_bit:
+    if thirty_two_bit != None:
         cmd = "%s set apppool \"/apppool.name:%s\" /enable32BitAppOnWin64:%s"\
               % (APP_CMD, name, str(thirty_two_bit))
         run(cmd)
@@ -101,19 +102,19 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
         proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         proc.wait()
 
-    if worker_idle_timeout:
+    if idle_timeout:
         cmd = "%s set config /section:applicationPools \"/[name='%s'].processModel.idleTimeout:%s\""\
-              % (APP_CMD, name, str(worker_idle_timeout))
+              % (APP_CMD, name, str(idle_timeout))
         run(cmd)
 
     if identity:
         if identity not in IDENTITIES:
             raise Exception("Invalid Identity: %s. "\
                 "Choose from:" % (identity, IDENTITIES))
-        if identity == "Custom":
+        if identity == "SpecificUser":
             if not (username and password):
                 raise Exception("Please specify a username "\
-                    "and a password for custom identity.")
+                    "and a password for specific user.")
 
             cmd = "%s set config /section:applicationPools" \
                     " \"/[name='%s'].processModel.identityType:SpecificUser\""\
@@ -127,7 +128,7 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
                      % (APP_CMD, name, identity)
             run(cmd)
 
-    if loadUserProfile:
+    if loadUserProfile != None:
         cmd = "%s set config /section:applicationPools \"/[name='%s'].ProcessModel.loadUserProfile:%s\""\
           % (APP_CMD, name, str(loadUserProfile))
         run(cmd)
@@ -139,12 +140,12 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
           % (APP_CMD, name, pipeline_mode)
         run(cmd)
 
-    if ping_enabled:
+    if ping_enabled != None:
         cmd = "%s set config /section:applicationPools \"/[name='%s'].ProcessModel.pingingEnabled:%s\""\
           % (APP_CMD, name, str(ping_enabled))
         run(cmd)
 
-    if ping_period:
+    if ping_period != None:
         ping_period = str(ping_period)
         if ":" not in ping_period:
             ping_period = "00:00:%s" % ping_period
