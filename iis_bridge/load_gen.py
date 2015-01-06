@@ -6,6 +6,10 @@ import threading
 from threading import Thread
 import time
 import urllib2
+import urllib
+import json
+
+REQUEST_TIMEOUT = 20 # seconds
 
 class HttpFlood(Thread):
     """ sends parallel get requests to the specified urls
@@ -55,14 +59,47 @@ class HttpFlood(Thread):
         threads = []# clean up
 
 
-    def send(self, url):
-        """ sends a get request to a url """
+    def send(self, url_obj):
+        """ sends a get request to a url
+        url: either string or list
+            if it is a list, then it specifies [url, req_method, req_data, req_type]
+            only the first parameter is required
+            req_method could be GET (default), POST, PUT, DELETE, HEAD
+            req_type could be html (default), json, xml 
+        """
+        url = url_obj
+        req_method = "GET"
+        req_data = None
+        req_type = "html"
+        if type(url) == list:
+            url = url_obj[0]
+            if len(url_obj) > 1: req_method = url_obj[1]
+            if len(url_obj) > 2: req_data = url_obj[2]
+            if len(url_obj) > 3: req_type = url_obj[3]
+
         try:
-            response = urllib2.urlopen(url)
-            if response.getcode() != 200:
-                with self.fail_count_lock:
-                    self.failed_reqs += 1
-            response.close()
+            opener = urllib2.build_opener(urllib2.HTTPHandler)
+            if req_method in ['PUT', 'POST']:
+                if req_type == 'json':
+                    if req_data != None:
+                        req_data = json.dumps(req_data)
+                elif req_type == 'html' and type(req_data) == dict:
+                    req_data = urllib.urlencode(req_data) # converts to encoded string
+                elif req_type != "xml":
+                    raise Exception("The request type %s is not supported yet." % req_type)
+
+                request = urllib2.Request(url, data=req_data)
+                if req_type == 'json':
+                    request.add_header('Content-Type', 'application/json')
+                elif req_type == 'xml':
+                    request.add_header('Content-Type', 'text/xml')
+            else:
+                request = urllib2.Request(url)
+        
+            request.get_method = lambda: req_method
+            resp = opener.open(request, timeout=REQUEST_TIMEOUT)
+            print resp.read()
+            resp.close()
         except Exception:
             with self.fail_count_lock:
                 self.failed_reqs += 1

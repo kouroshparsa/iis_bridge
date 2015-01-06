@@ -70,13 +70,15 @@ def monitor_with_load(iterations, urls, rate,\
 
 
 def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
-         output_path='out.html'):
+         output_path='out.html', pools_to_monitor=None):
     """ produces an html report
     datasets: the data to plot along with labels
     mem_type: (optional) what type of memory you'd like to monitor
     mem_unit: (optional) the memory units
     output_path: where to save the html report
     """
+    if pools_to_monitor:
+        datasets = dict((k,v) for k,v in datasets.items() if k in pools_to_monitor)
     context = {
         'datasets': datasets,
         'xlabel': 'time (seconds)',

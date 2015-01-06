@@ -13,12 +13,13 @@ Link
 """
 from setuptools import Command, setup, find_packages
 
+version = '1.0'
 
 setup(
     name='iis_bridge',
-    version='0.9',
+    version=version,
     url='https://github.com/kouroshparsa/iis_bridge',
-    download_url='https://github.com/kouroshparsa/iis_bridge/packages/0.9',
+    download_url='https://github.com/kouroshparsa/iis_bridge/packages/%s' % version,
     license='GNU',
     author='Kourosh Parsa',
     author_email="kouroshtheking@gmail.com",
