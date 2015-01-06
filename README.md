@@ -52,7 +52,7 @@ app2_port = site.get_port("App2")
 urls = ["http://localhost:%s?add=3,4,5" % app1_port,\
         "http://localhost:%s" % app2_port,\
         ["http://localhost:190/CalcService.svc/multiply", "POST", {"list":[1,2,3]}, "json"],\
-        ["http://localhost:190/CalcService.svc/multiply", "POST", {"<list><int>1<int/><int>2<int/><int>3<int/></list>", "xml"]
+        ["http://localhost:190/CalcService.svc/multiply", "POST", "<list><int>1<int/><int>2<int/><int>3<int/></list>", "xml"]
        ]
 pools = ["App1", "App2"]
 mem_unit = 'MB'
