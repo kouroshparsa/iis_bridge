@@ -61,11 +61,11 @@ def monitor_with_load(iterations, urls, rate,\
     http_thread = load_gen.HttpFlood(iterations,\
         urls, rate, interval=interval)
     http_thread.start()
-    print "Starting to send http requests and monitor the memory usage..."
+    print("Starting to send http requests and monitor the memory usage...")
     datasets = monitor(total_length=iterations,\
         mem_type=mem_type, mem_unit=mem_unit, delta=interval)
     http_thread.join()
-    print "Failed requests: %i" % http_thread.failed_reqs
+    print("Failed requests: %i" % http_thread.failed_reqs)
     return datasets
 
 
@@ -90,7 +90,7 @@ def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
     out_file = open(output_path, 'w')
     out_file.write(out)
     out_file.close()
-    print "The html report is saved to %s" % os.path.realpath(output_path)
+    print("The html report is saved to %s" % os.path.realpath(output_path))
 
 
 if __name__ == "__main__":

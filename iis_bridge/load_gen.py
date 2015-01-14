@@ -98,7 +98,6 @@ class HttpFlood(Thread):
         
             request.get_method = lambda: req_method
             resp = opener.open(request, timeout=REQUEST_TIMEOUT)
-            print resp.read()
             resp.close()
         except Exception:
             with self.fail_count_lock:

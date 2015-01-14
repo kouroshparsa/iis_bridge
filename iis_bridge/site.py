@@ -86,7 +86,7 @@ def create(name, port, path, pool_name, protocol="http", site_id=None):
     - site_id (optional): the site id to associate with the new site
     """
     if exists(name):
-        print "The pool '%s' already exists." % name
+        print("The pool '%s' already exists." % name)
         return
 
     if is_port_taken(port):
@@ -110,7 +110,7 @@ def create(name, port, path, pool_name, protocol="http", site_id=None):
 def delete(name):
     """ deletes a site given its name """
     if not exists(name):
-        print "The site '%s' does not exist." % name
+        print("The site '%s' does not exist." % name)
         return
 
     cmd = "%s delete site \"%s\"" % (APP_CMD, name)

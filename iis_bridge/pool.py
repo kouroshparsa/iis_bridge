@@ -26,7 +26,7 @@ def create(name, runtime_version="4.0", pipeline_mode="Integrated"):
     - pipeline_mode: Integrated, Classic
     """
     if exists(name):
-        print "The pool '%s' already exists." % name
+        print("The pool '%s' already exists." % name)
         return
 
     cmd = "%s add apppool /name:\"%s\"" % (APP_CMD, name)
@@ -165,7 +165,7 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
 def delete(name):
     """ deletes a pool given its name """
     if not exists(name):
-        print "The pool '%s' does not exist." % name
+        print("The pool '%s' does not exist." % name)
         return
 
     cmd = "%s delete apppool \"%s\"" % (APP_CMD, name)

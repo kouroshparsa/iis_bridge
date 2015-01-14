@@ -105,10 +105,10 @@ def install(packages=None):
         for pkg in packages:
             try:
                 config.run("%s -install %s" % (config.SERVER_MGR_CMD, pkg))
-                print "Installed %s -allSubFeatures " % pkg
+                print("Installed %s -allSubFeatures " % pkg)
             except Exception as ex:
                 if "NoChange" in str(ex):
-                    print "%s is already installed." % pkg
+                    print("%s is already installed." % pkg)
                 else:
                     raise Exception(str(ex))
     elif config.DISM:
@@ -117,14 +117,14 @@ def install(packages=None):
         for pkg in packages:
             config.run("%s /online /Enable-Feature /FeatureName:%s /All"\
                     % (config.DISM, pkg))
-            print "Installed %s" % pkg
+            print("Installed %s" % pkg)
     elif packages:
         if type(packages) == list:
             packages_str = ";".join(packages)
-        print "Installing %s" % packages_str
+        print("Installing %s" % packages_str)
         config.run("start /w pkgmgr /iu:%s" % packages_str)
     else:
-        print "Installing %s" % professional_pkg
+        print("Installing %s" % professional_pkg)
         cmd = "start /w pkgmgr /iu:%s" % professional_pkg
         proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         proc.wait()
@@ -148,10 +148,10 @@ def register_asp():
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
             out, err = proc.communicate()
             if proc.returncode != 0:
-                print "Error: %s\n%s" % (out, err)
+                print("Error: %s\n%s" % (out, err))
         else:
-            print "Could not register %s because the file is missing: %s"\
-                % (ver, aspnet_regiis)
+            print("Could not register %s because the file is missing: %s"\
+                % (ver, aspnet_regiis))
         config.run("%s /Online /Enable-Feature /all /FeatureName:IIS-ASPNET45" % config.DISM)
 
 

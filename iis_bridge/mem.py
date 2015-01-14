@@ -81,4 +81,4 @@ def get_workers(mem_type=MEM_TYPES[0], mem_unit='KB'):
 
 
 if __name__ == "__main__":
-    print [str(w) for w in get_workers()]
+    print([str(w) for w in get_workers()])
