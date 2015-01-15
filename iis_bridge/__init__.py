@@ -15,7 +15,7 @@ def iisreset():
     config.run('iisreset')
 
 
-def is_running(name):
+def is_running():
     """ returns a boolean indicating whether iis is running
     """
     return get_status() == "running"

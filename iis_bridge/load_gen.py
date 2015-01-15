@@ -8,8 +8,7 @@ import time
 import urllib2
 import urllib
 import json
-
-REQUEST_TIMEOUT = 20 # seconds
+import os
 
 class HttpFlood(Thread):
     """ sends parallel get requests to the specified urls
@@ -19,22 +18,25 @@ class HttpFlood(Thread):
 	iterations: how many iterations to perform (load duration)
 	urls: list of urls to send requests to
 	rate: an integer representing how many requests to send per second
-    interval: time steps in seconds!
+        interval: time steps in seconds!
 	load_type: how to generate the http load, default=constant
+	timeout: http request timeout in second
     """
     LOAD_TYPES = ['constant', 'step']
     
     def __init__(self, iterations, urls, rate,\
-        interval=1, load_type=LOAD_TYPES[0]):
+        interval=1, load_type=LOAD_TYPES[0], timeout=15):
         self.failed_reqs = 0
         self.fail_count_lock = threading.Lock()
+        self.received_resp_count = 0
+        self.received_resp_count_lock = threading.Lock()
         super(HttpFlood, self).__init__()
         self.iterations = iterations
         self.urls = urls
         self.rate = rate
         self.interval = interval
         self.load_type = load_type
-
+        self.timeout = timeout
 
     def run(self):
         if len(self.urls) < 1:
@@ -45,18 +47,27 @@ class HttpFlood(Thread):
             self.iterations /= 2
             time.sleep(self.iterations)# first half, silence
 
-        for i in range(self.iterations / self.interval):
+        iters = int(self.iterations / self.interval)
+        total_resp_received = 0
+        for i in range(iters):
             for j in range(self.rate):
                 thread = threading.Thread(target=self.send, args=[self.urls[ind]])
                 thread.daemon = True # Daemonize thread
                 thread.start() # Start the execution
                 threads.append(thread)
                 ind = (ind + 1) % len(self.urls)
-            threads = [t for t in threads if t.isAlive()]# clean up
             time.sleep(self.interval)
+            
+            threads = [t for t in threads if t.isAlive()]# clean up
+            with self.received_resp_count_lock:
+                total_resp_received += self.received_resp_count
+                self.received_resp_count = 0
         for thread in threads:
-            thread.join()
-        threads = []# clean up
+            thread.join(REQUEST_TIMEOUT)
+        with self.received_resp_count_lock:
+                total_resp_received += self.received_resp_count
+        print("Total Responses Received = %i" % total_resp_received)
+        del threads# clean up
 
 
     def send(self, url_obj):
@@ -97,9 +108,11 @@ class HttpFlood(Thread):
                 request = urllib2.Request(url)
         
             request.get_method = lambda: req_method
-            resp = opener.open(request, timeout=REQUEST_TIMEOUT)
+            resp = opener.open(request, timeout=self.timeout)
             resp.close()
-        except Exception:
+            with self.received_resp_count_lock:
+                self.received_resp_count += 1
+        except Exception as ex:
             with self.fail_count_lock:
                 self.failed_reqs += 1
 

@@ -46,26 +46,29 @@ def monitor(delta=1, total_length=10,\
 
 
 def monitor_with_load(iterations, urls, rate,\
-        mem_type='WorkingSetPrivate', mem_unit='KB'):
+        mem_type='WorkingSetPrivate', mem_unit='KB', timeout=15):
     """ generates an http load and monitors the memory consumption
     iterations: how many iterations to perform (load duration)
     urls: list of urls to send requests to
     rate: an integer representing how many requests to send per second
     mem_type: (optional) what type of memory you'd like to monitor
     mem_unit: (optional) the memory units
+    timeout: http request timeout in second
     output_path: where to save the html report
     """
     if urls == 'all':
         urls = [site.get_url(name) for name in iis.get_site_names()]
     interval = 1 # per second
     http_thread = load_gen.HttpFlood(iterations,\
-        urls, rate, interval=interval)
+        urls, rate, interval=interval, timeout=timeout)
+    http_thread.daemon = True
     http_thread.start()
     print("Starting to send http requests and monitor the memory usage...")
     datasets = monitor(total_length=iterations,\
         mem_type=mem_type, mem_unit=mem_unit, delta=interval)
     http_thread.join()
-    print("Failed requests: %i" % http_thread.failed_reqs)
+    print("%i/%i requests Failed."\
+          % (http_thread.failed_reqs, int(rate * iterations / interval)))
     return datasets
 
 
