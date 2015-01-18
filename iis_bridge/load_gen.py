@@ -11,7 +11,6 @@ if sys.version_info.major == 2:
 import urllib
 import json
 
-
 class HttpFlood(Thread):
     """ sends parallel get requests to the specified urls
     at a constant rate per second
@@ -99,27 +98,31 @@ class HttpFlood(Thread):
 
     def __send3(self, url, req_method="GET", req_data=None, req_type="html"):
         """ same doc as send method - this is to be used on python 3 """
+        import urllib.request
         opener = urllib.request.build_opener(urllib.request.HTTPHandler)
         if req_method in ['PUT', 'POST']:
             if req_type == 'json':
                 if req_data:
                     req_data = json.dumps(req_data).encode('utf8')
                 request = urllib.request.Request(url, data=req_data,\
-                            headers={'content-type': 'application/json'})
+                            headers={'content-type': 'application/json'},\
+                            method=req_method)
             elif req_type == 'xml':
                 if req_data:
                     req_data = req_data.encode('UTF8')# convert to bytes
                 request = urllib.request.Request(url, data=req_data,\
-                        headers={'content-type': 'text/xml'})
+                        headers={'content-type': 'text/xml'},\
+                        method=req_method)
             else:
                 if req_data:
                     req_data = urllib.parse.urlencode(req_data) # converts to encoded string
                     req_data = req_data.encode('UTF8')# convert to bytes
-                request = urllib.request.Request(url, data=req_data)
+                request = urllib.request.Request(url, data=req_data,\
+                                                 method=req_method)
         else:
-            request = urllib.request.Request(url)
+            request = urllib.request.Request(url, method=req_method)
 
-        resp = urllib.request.urlopen(request)
+        resp = urllib.request.urlopen(request, timeout=self.timeout)
         html = str(resp.read())
         resp.close()
         return html
