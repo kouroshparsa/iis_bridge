@@ -3,12 +3,15 @@ import iis_bridge as iis
 import iis_bridge.site as site
 import iis_bridge.pool as pool
 import iis_bridge.mon as mon
+import iis_bridge.config as config
 import time
+import os
 
 class TestIIS(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        #iis.install()
+        if not os.path.exists('%s\\InetMgr.exe' % config.IIS_HOME):
+            iis.install()
         self.test_site = 'test_site'
         count = 2
         while self.test_site in iis.get_site_names():
