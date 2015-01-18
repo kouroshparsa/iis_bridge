@@ -31,15 +31,19 @@ else:
 if not os.path.exists(DISM):
     DISM = None
 
-def run(cmd):
+def run(cmd, errMsg=None):
     """ executes a command, throws exception upon failure
-    returns the stdout
+    returns the stdout as string
+    cmd: string - command to run
+    errMsg: string (default=None) - the error message to display
     """
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     output, err = proc.communicate()
-    if proc.returncode != 0:
-        msg = "%s\n%s\ncmd: %s" % (output, err, cmd)
-        raise Exception(msg)
-    if "[Error]" in output:
-        raise Exception(output)
+    if type(output) == bytes:
+        output = output.decode(encoding='UTF-8')
+    if "[Error]" in output or proc.returncode != 0:
+        if errMsg:
+            raise Exception(errMsg)
+        else:
+            raise Exception("%s\r\n%s" % (output, err))
     return output

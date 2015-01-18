@@ -3,10 +3,18 @@ import iis_bridge as iis
 import iis_bridge.site as site
 import iis_bridge.pool as pool
 import iis_bridge.mon as mon
+import time
 
-class TestIis(unittest.TestCase):
-    def setup(self):
-        iis.install()
+class TestIIS(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        #iis.install()
+        self.test_site = 'test_site'
+        count = 2
+        while self.test_site in iis.get_site_names():
+            self.test_site = "test_site_%i" % count
+            count += 1
+        self.test_pool = self.test_site.replace("site", "pool")
 
     def test_version(self):
         ver = iis.get_version()
@@ -14,35 +22,42 @@ class TestIis(unittest.TestCase):
 
 
     def test_site_pool(self):
-        site.create("mysite", 5050, r"C:\inetpub\wwwroot\mysite", "mypool")
-        assert "mysite" in iis.get_site_names(), "Failed to create the site"
-        assert "mypool" in iis.get_pool_names(), "Failed to create the pool"
-        site.delete("mysite")
-        pool.delete("mypool")
-        assert "mysite" not in iis.get_site_names(), "Failed to delete the site"
-        assert "mypool" not in iis.get_pool_names(), "Failed to delete the pool"
+        port = 5050
+        while not site.is_port_available(port):
+            port += 1
+        site.create(self.test_site, port, r"C:\inetpub\wwwroot\mysite", self.test_pool)
+        time.sleep(2)
+        assert self.test_site in iis.get_site_names(), "Failed to create the site"
+        assert self.test_pool in iis.get_pool_names(), "Failed to create the pool"
+        site.delete(self.test_site)
+        pool.delete(self.test_pool)
+        assert self.test_site not in iis.get_site_names(), "Failed to delete the site"
+        assert self.test_pool not in iis.get_pool_names(), "Failed to delete the pool"
 
 
     def test_site_pool_state(self):
-        site.create("asite", 5060, r"C:\inetpub\wwwroot\asite", "apool")
-        site.stop("asite")
-        assert not site.is_running("asite"), "Failed to stop the site"
-        site.start("asite")
-        assert site.is_running("asite"), "Failed to start the site"
-        pool.stop("apool")
-        assert not pool.is_running("apool"), "Failed to stop the pool"
-        pool.start("apool")
-        assert pool.is_running("apool"), "Failed to start the pool"
-        site.delete("asite")
-        pool.delete("apool")
+        port = 5050
+        while not site.is_port_available(port):
+            port += 1
+        site.create(self.test_site, port, r"C:\inetpub\wwwroot\asite", self.test_pool)
+        site.stop(self.test_site)
+        assert not site.is_running(self.test_site), "Failed to stop the site"
+        site.start(self.test_site)
+        assert site.is_running(self.test_site), "Failed to start the site"
+        pool.stop(self.test_pool)
+        assert not pool.is_running(self.test_pool), "Failed to stop the pool"
+        pool.start(self.test_pool)
+        assert pool.is_running(self.test_pool), "Failed to start the pool"
+        site.delete(self.test_site)
+        pool.delete(self.test_pool)
 
 
     def test_mem_mon(self):
-        datasets = mon.monitor_with_load(6, 'all', 12)
+        datasets = mon.monitor_with_load(6, 'all', 12, timeout=40)
         pointsets = [v[1]['data'] for v in datasets.items()]
         for points in pointsets:
             xvals = [pt[0] for pt in points]
-            assert xvals == range(6), "Invalid dataset range: %s" % xvals
+            assert xvals == list(range(6)), "Invalid dataset range: %s" % xvals
 
 
     def test_iis_state(self):
@@ -51,6 +66,10 @@ class TestIis(unittest.TestCase):
         iis.start()
         assert iis.is_running(), "Failed to start iis."
 
+    @classmethod
+    def tearDownClass(self):
+        site.delete(self.test_site)
+        pool.delete(self.test_pool)
 
 if __name__ == '__main__':
     unittest.main()

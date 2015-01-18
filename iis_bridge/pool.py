@@ -4,8 +4,9 @@
 """
 from iis_bridge.config import *
 import time
-IDENTITIES = ["ApplicationPoolIdentity", "LocalService", "LocalSystem", "NetworkService", "SpecificUser"]
-    
+IDENTITIES = ["ApplicationPoolIdentity", "LocalService",\
+              "LocalSystem", "NetworkService", "SpecificUser"]
+
 def exists(name):
     """ given the pool name, returns whether
     the pool already exists
@@ -38,7 +39,10 @@ def create(name, runtime_version="4.0", pipeline_mode="Integrated"):
 
     cmd = "%s /managedPipelineMode:%s" % (cmd, pipeline_mode)
     run(cmd)
-    time.sleep(1) # some appcmd commands fail without this delay
+    for iter in range(5):# wait a bit
+        if exists(name):
+            break
+        time.sleep(1)
 
 
 def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
@@ -99,8 +103,7 @@ def config(name, private_mem=None, max_proc=None, thirty_two_bit=None,\
     if runtime_version:
         cmd = "%s set apppool \"/apppool.name:%s\" /managedRuntimeVersion:v%s"\
               % (APP_CMD, name, str(runtime_version))
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        proc.wait()
+        run(cmd)
 
     if idle_timeout:
         cmd = "%s set config /section:applicationPools \"/[name='%s'].processModel.idleTimeout:%s\""\
@@ -169,8 +172,7 @@ def delete(name):
         return
 
     cmd = "%s delete apppool \"%s\"" % (APP_CMD, name)
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    proc.wait()
+    run(cmd)
 
 
 def is_running(name):

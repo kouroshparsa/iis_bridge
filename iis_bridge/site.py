@@ -16,8 +16,8 @@ def is_port_available(port):
     """
     cmd = "netstat -an|findstr \"0.0.0.0:%s\"" % port
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    output, err = proc.communicate()
-    return proc.returncode == 0
+    proc.communicate()
+    return proc.returncode != 0
 
 
 def is_port_taken(port):
@@ -50,11 +50,7 @@ def get_url(site_name):
     it returns the site url
     """
     cmd = "%s list sites|findstr \"%s\"" % (APP_CMD, site_name)
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    output, err = proc.communicate()
-    if proc.returncode != 0:
-        raise RuntimeError("The site [%s] does not exist. %s"\
-            % (site_name, err))
+    output = str(subprocess.check_output(cmd, shell=True))
     protocol = "http"
     if "https" in output:
         protocol = "https"
@@ -86,17 +82,20 @@ def create(name, port, path, pool_name, protocol="http", site_id=None):
     - site_id (optional): the site id to associate with the new site
     """
     if exists(name):
-        print("The pool '%s' already exists." % name)
+        print("The site '%s' already exists." % name)
         return
 
     if is_port_taken(port):
         raise Exception("An iis site is already using the port: %i" % port)
-    if is_port_available(port):
+    if not is_port_available(port):
         raise Exception("A program is already using the port: %i" % port)
 
     if not pool.exists(pool_name):
         pool.create(pool_name)
-
+        for iter in range(5):# wait a bit
+            if pool.exists(pool_name):
+                break
+            time.sleep(1)
     cmd = "%s add site /name:\"%s\" /physicalPath:\"%s\" /bindings:%s/*:%i:"\
           % (APP_CMD, name, path, protocol, port)
     if site_id:
@@ -104,7 +103,10 @@ def create(name, port, path, pool_name, protocol="http", site_id=None):
     run(cmd)
     run("%s set app \"%s/\" /applicationPool:\"%s\""\
         % (APP_CMD, name, pool_name))
-    time.sleep(1) # some appcmd commands fail without this delay
+    for iter in range(5):# wait a bit
+        if exists(name):
+            break
+        time.sleep(1)
 
 
 def delete(name):

@@ -13,10 +13,8 @@ Link
 """
 from setuptools import Command, setup, find_packages
 
-version = '1.2'
+version = '1.3'
 import sys
-if sys.version_info.major != 2:
-    print("WARNING: currently iis_bridge is only supported on python 2.x")
 setup(
     name='iis_bridge',
     version=version,

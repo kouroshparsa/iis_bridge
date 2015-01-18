@@ -55,13 +55,14 @@ def get_workers(mem_type=MEM_TYPES[0], mem_unit='KB'):
     """
     workers = []
     cmd = "sc query w3svc"
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    output = proc.communicate()[0]
+    output = config.run(cmd)
     if not "RUNNING" in output:
         config.run("sc start w3svc")
     cmd = "%s list wps" % config.APP_CMD
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     output = proc.communicate()[0]
+    if type(output) == bytes:
+        output = output.decode(encoding='UTF-8')
     if proc.returncode != 0:
         if "ERROR" in output:
             raise Exception("Either the WAS service is down or "\

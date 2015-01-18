@@ -5,22 +5,24 @@ Author: Kourosh Parsa
 import threading
 from threading import Thread
 import time
-import urllib2
+import sys
+if sys.version_info.major == 2:
+    import urllib2
 import urllib
 import json
-import os
+
 
 class HttpFlood(Thread):
     """ sends parallel get requests to the specified urls
     at a constant rate per second
     It's non-blocking - it does not wait for the response
-	Parameters:
-	iterations: how many iterations to perform (load duration)
-	urls: list of urls to send requests to
-	rate: an integer representing how many requests to send per second
+    Parameters:
+    iterations: how many iterations to perform (load duration)
+    urls: list of urls to send requests to
+    rate: an integer representing how many requests to send per second
         interval: time steps in seconds!
-	load_type: how to generate the http load, default=constant
-	timeout: http request timeout in second
+    load_type: how to generate the http load, default=constant
+    timeout: http request timeout in second
     """
     LOAD_TYPES = ['constant', 'step']
     
@@ -63,11 +65,64 @@ class HttpFlood(Thread):
                 total_resp_received += self.received_resp_count
                 self.received_resp_count = 0
         for thread in threads:
-            thread.join(REQUEST_TIMEOUT)
+            thread.join(self.timeout)
         with self.received_resp_count_lock:
                 total_resp_received += self.received_resp_count
         print("Total Responses Received = %i" % total_resp_received)
         del threads# clean up
+
+
+    def __send2(self, url, req_method="GET", req_data=None, req_type="html"):
+        """ same doc as send method - this is to be used on python 2 """
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        if req_method in ['PUT', 'POST']:
+            if req_type == 'json':
+                if req_data:
+                    req_data = json.dumps(req_data)
+            elif req_type == 'html' and type(req_data) == dict:
+                req_data = urllib.urlencode(req_data) # converts to encoded string
+            elif req_type != "xml":
+                raise Exception("The request type %s is not supported yet." % req_type)
+
+            request = urllib2.Request(url, data=req_data)
+            if req_type == 'json':
+                request.add_header('Content-Type', 'application/json')
+            elif req_type == 'xml':
+                request.add_header('Content-Type', 'text/xml')
+        else:
+            request = urllib2.Request(url)
+    
+        request.get_method = lambda: req_method
+        resp = opener.open(request, timeout=self.timeout)
+        resp.close()
+
+
+    def __send3(self, url, req_method="GET", req_data=None, req_type="html"):
+        """ same doc as send method - this is to be used on python 3 """
+        opener = urllib.request.build_opener(urllib.request.HTTPHandler)
+        if req_method in ['PUT', 'POST']:
+            if req_type == 'json':
+                if req_data:
+                    req_data = json.dumps(req_data).encode('utf8')
+                request = urllib.request.Request(url, data=req_data,\
+                            headers={'content-type': 'application/json'})
+            elif req_type == 'xml':
+                if req_data:
+                    req_data = req_data.encode('UTF8')# convert to bytes
+                request = urllib.request.Request(url, data=req_data,\
+                        headers={'content-type': 'text/xml'})
+            else:
+                if req_data:
+                    req_data = urllib.parse.urlencode(req_data) # converts to encoded string
+                    req_data = req_data.encode('UTF8')# convert to bytes
+                request = urllib.request.Request(url, data=req_data)
+        else:
+            request = urllib.request.Request(url)
+
+        resp = urllib.request.urlopen(request)
+        html = str(resp.read())
+        resp.close()
+        return html
 
 
     def send(self, url_obj):
@@ -89,30 +144,14 @@ class HttpFlood(Thread):
             if len(url_obj) > 3: req_type = url_obj[3]
 
         try:
-            opener = urllib2.build_opener(urllib2.HTTPHandler)
-            if req_method in ['PUT', 'POST']:
-                if req_type == 'json':
-                    if req_data != None:
-                        req_data = json.dumps(req_data)
-                elif req_type == 'html' and type(req_data) == dict:
-                    req_data = urllib.urlencode(req_data) # converts to encoded string
-                elif req_type != "xml":
-                    raise Exception("The request type %s is not supported yet." % req_type)
-
-                request = urllib2.Request(url, data=req_data)
-                if req_type == 'json':
-                    request.add_header('Content-Type', 'application/json')
-                elif req_type == 'xml':
-                    request.add_header('Content-Type', 'text/xml')
+            if sys.version_info.major == 2:
+                self.__send2(url, req_method, req_data, req_type)
             else:
-                request = urllib2.Request(url)
-        
-            request.get_method = lambda: req_method
-            resp = opener.open(request, timeout=self.timeout)
-            resp.close()
+                self.__send3(url, req_method, req_data, req_type)
+            
             with self.received_resp_count_lock:
                 self.received_resp_count += 1
-        except Exception as ex:
+        except Exception:
             with self.fail_count_lock:
                 self.failed_reqs += 1
 

@@ -6,7 +6,10 @@ import iis_bridge.config as config
 import sys
 import os
 import subprocess
-import _winreg
+if sys.version_info.major == 2:
+    import _winreg as winreg
+else:# python3
+    import winreg
 import platform
 
 def iisreset():
@@ -115,9 +118,15 @@ def install(packages=None):
         if not packages:
             packages = dism_pkgs
         for pkg in packages:
-            config.run("%s /online /Enable-Feature /FeatureName:%s /All"\
-                    % (config.DISM, pkg))
-            print("Installed %s" % pkg)
+            try:
+                cmd = "%s /online /Enable-Feature /FeatureName:%s"\
+                    % (config.DISM, pkg)
+                if 'Windows-post2008Server-6' in platform.platform():# windows8
+                    cmd = "%s /All" % cmd
+                config.run(cmd)
+                print("Installed %s" % pkg)
+            except:
+                print("Failed to install %s" % pkg)
     elif packages:
         if type(packages) == list:
             packages_str = ";".join(packages)
@@ -145,10 +154,7 @@ def register_asp():
         aspnet_regiis = os.path.join(framework_dir, ver, 'aspnet_regiis.exe')
         if os.path.exists(aspnet_regiis):
             cmd = "%s -ir" % aspnet_regiis
-            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-            out, err = proc.communicate()
-            if proc.returncode != 0:
-                print("Error: %s\n%s" % (out, err))
+            config.run(cmd)
         else:
             print("Could not register %s because the file is missing: %s"\
                 % (ver, aspnet_regiis))
@@ -157,10 +163,10 @@ def register_asp():
 
 def get_version():
     """ returns the iis version as string """
-    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,\
+    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,\
         r'SOFTWARE\Microsoft\InetStp',\
-        0, _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS)
-    ver = _winreg.QueryValueEx(key, "VersionString")[0]
+        0, winreg.KEY_WOW64_64KEY + winreg.KEY_ALL_ACCESS)
+    ver = winreg.QueryValueEx(key, "VersionString")[0]
     ver = str(ver.split(' ')[1])
     return ver
 
@@ -168,20 +174,14 @@ def get_version():
 def get_pool_names():
     """ returns a list of application pool names """
     cmd = "%s list apppool" % config.APP_CMD
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    output, err = proc.communicate()
-    if proc.returncode != 0:
-        raise Exception("You need elevated permissions.")
+    output = config.run(cmd, errMsg="You need elevated permissions.")
     return [line.split('"')[1] for line in output.splitlines()]
 
 
 def get_site_names():
     """ returns a list of site names """
     cmd = "%s list sites" % config.APP_CMD
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    output = proc.communicate()[0]
-    if proc.returncode != 0:
-        raise Exception("You need elevated permissions.")
+    output = config.run(cmd, errMsg="You need elevated permissions.")
     return [line.split('"')[1] for line in output.splitlines()]
 
 

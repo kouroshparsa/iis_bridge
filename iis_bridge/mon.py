@@ -31,13 +31,13 @@ def monitor(delta=1, total_length=10,\
         pools_without_workers = copy.copy(POOL_NAMES)
         for worker in workers:
             pools_without_workers.remove(worker.poolname)
-            if not datasets.has_key(worker.poolname):
+            if worker.poolname not in datasets:
                 datasets[worker.poolname] =\
                     {'label': worker.poolname, 'data': []}
             datasets[worker.poolname]['data'].append(\
                 [t2, worker.mem])
         for p in pools_without_workers:
-            if datasets.has_key(p):
+            if p in datasets:
                 datasets[p]['data'].append([t2, 0])
             else:
                 datasets[p] = {'label': p, 'data': [[t2, 0]]}
