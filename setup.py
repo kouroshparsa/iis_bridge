@@ -13,7 +13,7 @@ Link
 """
 from setuptools import Command, setup, find_packages
 
-version = '1.4'
+version = '1.5'
 import sys
 setup(
     name='iis_bridge',

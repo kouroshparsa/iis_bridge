@@ -175,14 +175,14 @@ def get_pool_names():
     """ returns a list of application pool names """
     cmd = "%s list apppool" % config.APP_CMD
     output = config.run(cmd, errMsg="You need elevated permissions.")
-    return [line.split('"')[1] for line in output.splitlines()]
+    return [str(line.split('"')[1]) for line in output.splitlines()]
 
 
 def get_site_names():
     """ returns a list of site names """
     cmd = "%s list sites" % config.APP_CMD
     output = config.run(cmd, errMsg="You need elevated permissions.")
-    return [line.split('"')[1] for line in output.splitlines()]
+    return [str(line.split('"')[1]) for line in output.splitlines()]
 
 
 def install_wcf(components="all"):

@@ -10,6 +10,7 @@ if sys.version_info.major == 2:
     import urllib2
 import urllib
 import json
+from datetime import datetime
 
 class HttpFlood(Thread):
     """ sends parallel get requests to the specified urls
@@ -31,6 +32,9 @@ class HttpFlood(Thread):
         self.fail_count_lock = threading.Lock()
         self.received_resp_count = 0
         self.received_resp_count_lock = threading.Lock()
+        self.total_resp_received = 0
+        self.avg_res_time = 0.0 # the average response time of the successful
+                          # request sent in seconds
         super(HttpFlood, self).__init__()
         self.iterations = iterations
         self.urls = urls
@@ -58,16 +62,21 @@ class HttpFlood(Thread):
                 threads.append(thread)
                 ind = (ind + 1) % len(self.urls)
             time.sleep(self.interval)
-            
             threads = [t for t in threads if t.isAlive()]# clean up
             with self.received_resp_count_lock:
-                total_resp_received += self.received_resp_count
+                self.total_resp_received += self.received_resp_count
                 self.received_resp_count = 0
         for thread in threads:
             thread.join(self.timeout)
         with self.received_resp_count_lock:
                 total_resp_received += self.received_resp_count
-        print("Total Responses Received = %i" % total_resp_received)
+                if self.total_resp_received == 0.0:
+                    self.avg_res_time = 0.0
+                else:
+                    self.avg_res_time /= self.total_resp_received
+        print("Total Responses Received = %i" % self.total_resp_received)
+        if self.total_resp_received > 0.0:
+            print("Average response time = %f sec" % self.avg_res_time)
         del threads# clean up
 
 
@@ -146,6 +155,7 @@ class HttpFlood(Thread):
             if len(url_obj) > 2: req_data = url_obj[2]
             if len(url_obj) > 3: req_type = url_obj[3]
 
+        t1 = datetime.now()
         try:
             if sys.version_info.major == 2:
                 self.__send2(url, req_method, req_data, req_type)
@@ -154,6 +164,8 @@ class HttpFlood(Thread):
             
             with self.received_resp_count_lock:
                 self.received_resp_count += 1
+                t2 = datetime.now()
+                self.avg_res_time += (t2 - t1).total_seconds()
         except Exception:
             with self.fail_count_lock:
                 self.failed_reqs += 1

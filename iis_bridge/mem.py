@@ -10,7 +10,7 @@ class Worker():
     """ this class represents an iis worker object"""
     def __init__(self, poolname=None, pid=None,\
         mem_type=MEM_TYPES[0], mem=None):
-        self.poolname = poolname
+        self.poolname = str(poolname)
         self.pid = int(pid)
         self.mem = float(mem)
         self.mem_type = mem_type

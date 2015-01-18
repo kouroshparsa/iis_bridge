@@ -32,15 +32,15 @@ def monitor(delta=1, total_length=10,\
         for worker in workers:
             pools_without_workers.remove(worker.poolname)
             if worker.poolname not in datasets:
-                datasets[worker.poolname] =\
-                    {'label': worker.poolname, 'data': []}
+                datasets[str(worker.poolname)] =\
+                    {'label': str(worker.poolname), 'data': []}
             datasets[worker.poolname]['data'].append(\
                 [t2, worker.mem])
         for p in pools_without_workers:
             if p in datasets:
                 datasets[p]['data'].append([t2, 0])
             else:
-                datasets[p] = {'label': p, 'data': [[t2, 0]]}
+                datasets[p] = {'label': str(p), 'data': [[t2, 0]]}
         time.sleep(delta)
     return datasets
 
@@ -81,7 +81,12 @@ def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
     output_path: where to save the html report
     """
     if pools_to_monitor:
-        datasets = dict((k,v) for k,v in datasets.items() if k in pools_to_monitor)
+        datasets = dict((k,v) for k, v in datasets.items() if k in pools_to_monitor)
+    datasets = dict((str(k),v) for k, v in datasets.items())
+    for val in datasets.values():
+        if 'label' in val:
+            val['label'] = str(val['label'])
+
     context = {
         'datasets': datasets,
         'xlabel': 'time (seconds)',
