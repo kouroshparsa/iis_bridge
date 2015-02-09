@@ -7,6 +7,13 @@ import iis_bridge.config as config
 import time
 import os
 
+def get_free_port():
+    """ returns an available port number to use """
+    port = 5050
+    while not site.is_port_available(port):
+        port += 1
+    return port
+
 class TestIIS(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -25,10 +32,8 @@ class TestIIS(unittest.TestCase):
 
 
     def test_site_pool(self):
-        port = 5050
-        while not site.is_port_available(port):
-            port += 1
-        site.create(self.test_site, port, r"C:\inetpub\wwwroot\mysite", self.test_pool)
+        site.create(self.test_site, get_free_port(),\
+                    r"C:\inetpub\wwwroot\mysite", self.test_pool)
         time.sleep(2)
         assert self.test_site in iis.get_site_names(), "Failed to create the site"
         assert self.test_pool in iis.get_pool_names(), "Failed to create the pool"
@@ -39,10 +44,8 @@ class TestIIS(unittest.TestCase):
 
 
     def test_site_pool_state(self):
-        port = 5050
-        while not site.is_port_available(port):
-            port += 1
-        site.create(self.test_site, port, r"C:\inetpub\wwwroot\asite", self.test_pool)
+        site.create(self.test_site, get_free_port(),\
+                    r"C:\inetpub\wwwroot\asite", self.test_pool)
         site.stop(self.test_site)
         assert not site.is_running(self.test_site), "Failed to stop the site"
         site.start(self.test_site)
@@ -68,6 +71,27 @@ class TestIIS(unittest.TestCase):
         assert not iis.is_running(), "Failed to stop iis."
         iis.start()
         assert iis.is_running(), "Failed to start iis."
+
+    def test_binding(self):
+        port = get_free_port()
+        site.create(self.test_site, port,\
+                    r"C:\inetpub\wwwroot\asite",\
+                    self.test_pool, protocol='https')
+        binding = site.get_bindings(self.test_site)
+        exp_binding = ["https/:%i:" % port]
+        assert binding == exp_binding,\
+               "Invalid binding. Expected:%s\nActual:%s"\
+               % (exp_binding, binding)
+
+        site.add_binding(self.test_site, 'net.tcp', 808)
+        binding = sorted(site.get_bindings(self.test_site))
+        exp_binding = sorted(["https/:%i:" % port, "net.tcp/:808:"])
+        assert binding == exp_binding,\
+               "Invalid binding. Expected:%s\nActual:%s"\
+               % (exp_binding, binding)
+        site.delete(self.test_site)
+        pool.delete(self.test_pool)
+
 
     @classmethod
     def tearDownClass(self):
