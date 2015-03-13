@@ -31,6 +31,27 @@ def is_port_taken(port):
     return "/*:%s:," % port in output
 
 
+def convert_site_list_to_binding(output):
+    """ converts the output of site list command to a dictionary
+    with the keys being the protocol and the values being the port
+    Parameters: output
+        is a string of the format used in the site list command
+    """
+    output = output[output.find('bindings:'):]
+    output = output[output.find(':') + 1:output.find(',state')].split(',')
+    bindings = {}
+    for part in output:
+        port = None
+        protocol = part.split("/")[0]
+        bps = part[part.find("/") + 1:].split(':')
+        if bps[0].isdigit():
+            port = int(bps[0])
+        elif len(bps) > 1 and bps[1].isdigit():
+            port = int(bps[1])
+        bindings[protocol] = port
+    return bindings
+
+
 def get_port(site_name):
     """ Given the iis site name
     it returns the port number of the site - integer
@@ -41,8 +62,12 @@ def get_port(site_name):
     if proc.returncode != 0:
         raise config.runtimeError("The site [%s] does not exist. %s"\
             % (site_name, err))
-    port = output.split(":")[3]
-    return int(port)
+    bindings = convert_site_list_to_binding(output)
+    if 'http' in bindings:
+        return bindings['http']
+    if 'https' in bindings:
+        return bindings['https']
+    return None
 
 
 def get_url(site_name):
@@ -51,11 +76,12 @@ def get_url(site_name):
     """
     cmd = "%s list sites|findstr \"%s\"" % (config.APP_CMD, site_name)
     output = str(subprocess.check_output(cmd, shell=True))
-    protocol = "http"
-    if "https" in output:
-        protocol = "https"
-    port = output.split(":")[3]
-    url = "%s://localhost:%s/" % (protocol, port)
+    bindings = convert_site_list_to_binding(output)
+    url = None
+    if 'http' in bindings:
+        url = "http://localhost:%s/" %  bindings['http']
+    if 'https' in bindings:
+        url = "https://localhost:%s/" %  bindings['https']
     return url
 
 

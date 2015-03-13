@@ -14,6 +14,12 @@ def get_free_port():
         port += 1
     return port
 
+
+def validate_protocols(protocols, bindings):
+    for protocol in protocols:
+        assert protocol in bindings, "Missing %s protocol" % protocol
+
+
 class TestIIS(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -91,6 +97,27 @@ class TestIIS(unittest.TestCase):
                % (exp_binding, binding)
         site.delete(self.test_site)
         pool.delete(self.test_pool)
+
+    def test_binding_conversion(self):
+        bindings = site.convert_site_list_to_binding(\
+            'SITE "xxx" (id:21,bindings:http/*:9001:,state:Started)')
+        validate_protocols(['http'], bindings)
+        assert bindings['http'] == 9001, "Invalid port. Expected: 9001, actual: %s" % bindings['http']
+        
+        bindings = site.convert_site_list_to_binding(\
+            'SITE "xxx" (id:22,bindings:net.pipe/netpipe,http/*:8044:,state:Started)')
+        validate_protocols(['net.pipe', 'http'], bindings)
+        assert bindings['http'] == 8044, "Invalid port. Expected: 8044, actual: %s" % bindings['http']
+        
+        bindings = site.convert_site_list_to_binding(\
+            'SITE "xxx" (id:23,bindings:http/*:8044:,net.tcp/808:*,net.pipe/netpipe,state:Started)')
+        validate_protocols(['net.pipe', 'net.tcp', 'http'], bindings)
+        assert bindings['http'] == 8044, "Invalid port. Expected: 8044, actual: %s" % bindings['http']
+        
+        bindings = site.convert_site_list_to_binding(\
+            'SITE "xxx" (id:23,bindings:https/*:8044:,net.tcp/808:*,net.pipe/netpipe,state:Started)')
+        validate_protocols(['net.pipe', 'net.tcp', 'https'], bindings)
+        assert bindings['https'] == 8044, "Invalid port. Expected: 8044, actual: %s" % bindings['https']
 
 
     @classmethod
