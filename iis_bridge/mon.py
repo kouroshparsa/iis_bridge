@@ -73,7 +73,7 @@ def monitor_with_load(iterations, urls, rate,\
 
 
 def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
-         output_path='out.html', pools_to_monitor=None):
+         output_path='out.html', pools_to_monitor=None, top_txt=None, bot_txt=None):
     """ produces an html report
     datasets: the data to plot along with labels
     mem_type: (optional) what type of memory you'd like to monitor
@@ -90,7 +90,8 @@ def html_report(datasets, mem_type='WorkingSetPrivate', mem_unit='KB',\
     context = {
         'datasets': datasets,
         'xlabel': 'time (seconds)',
-        'ylabel': '%s (%s)' % (mem_type, mem_unit)
+        'ylabel': '%s (%s)' % (mem_type, mem_unit),
+        'top_txt': top_txt, 'bot_txt': bot_txt
     }
     source = open(TEMPLATE_FILE, 'r').read()
     jinja_template = JinjaEnvironment().from_string(source)
@@ -106,4 +107,6 @@ if __name__ == "__main__":
     mem_unit = 'MB'
     datasets = monitor_with_load(6, 'all', 8,\
         mem_type=mem_type, mem_unit=mem_unit)
-    html_report(datasets, mem_type=mem_type, mem_unit=mem_unit)
+    from datetime import datetime
+    curr_time = str(datetime.now().replace(microsecond=0))
+    html_report(datasets, mem_type=mem_type, mem_unit=mem_unit, top_txt=curr_time)

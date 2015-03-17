@@ -2,7 +2,16 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 	<title></title>
 	<style media="screen" type="text/css">
-*{padding:0;margin:0;vertical-align:top}body{font:18px/1.5em proxima-nova,Helvetica,Arial,sans-serif}a{color:#069}a:hover{color:#28b}h2{margin-top:15px;font:400 32px omnes-pro,Helvetica,Arial,sans-serif}h3{margin-left:30px;font:400 26px omnes-pro,Helvetica,Arial,sans-serif;color:#666}p{margin-top:10px}button{font-size:18px;padding:1px 7px}input{font-size:18px}input[type=checkbox]{margin:7px}#header{position:relative;width:900px;margin:auto}#header h2{margin-left:10px;vertical-align:middle;font-size:42px;font-weight:700;text-decoration:none;color:#000}
+*{padding:0,0,0,50px;margin:0;vertical-align:top}
+body{font:18px/1.5em proxima-nova,Helvetica,Arial,sans-serif}
+a{color:#069}
+a:hover{color:#28b}h2{margin-top:15px;font:400 32px omnes-pro,Helvetica,Arial,sans-serif}
+h3{margin-left:30px;font:400 26px omnes-pro,Helvetica,Arial,sans-serif;color:#666}
+p{margin-top:10px;margin-left:40px}
+button{font-size:18px;padding:1px 7px}
+input{font-size:18px}
+input[type=checkbox]{margin:7px}
+#header{position:relative;width:900px;margin:auto}#header h2{margin-left:10px;vertical-align:middle;font-size:42px;font-weight:700;text-decoration:none;color:#000}
 
 #content{width:1280px;margin:0 auto;padding:30px;float:left}
 #footer{margin-top:25px;margin-bottom:10px;text-align:center;font-size:12px;color:#999}
@@ -62,16 +71,24 @@ return a.setAttribute("type",b),c&&(a.value=c),b}}}}}),Zb={set:function(a,b,c){r
 			++i;
 		});
 
-		// insert checkboxes 
+		// insert checkboxes
 		var choiceContainer = $("#choices");
-		$.each(datasets, function(key, val) {
+		var sorted_keys = []
+		$.each(datasets, function(key, value) {
+		  sorted_keys.push(key)
+		});
+		
+		sorted_keys = sorted_keys.sort();
+		for(var ind in sorted_keys){
+			key = sorted_keys[ind];
+			val = datasets[key];
 			choiceContainer.append("<br/><input type='checkbox' name='" + key +
 				"' checked='checked' id='id" + key + "'></input>" +
 				"<label for='id" + key + "'>"
 				+ val.label + "</label>");
-		});
+		}
 		choiceContainer.find("input").click(plotAccordingToChoices);
-
+		
 		function add_axes_labels(){
 			var container = $("#placeholder");
 			{% if xlabel %}
@@ -119,7 +136,11 @@ return a.setAttribute("type",b),c&&(a.value=c),b}}}}}),Zb={set:function(a,b,c){r
 	<div id="header">
 		<h2>Results</h2>
 	</div>
-
+	
+	{% if top_txt %}
+		<p>{{top_txt}}</p>
+	{% endif %}
+			
 	<div id="content">
 		<div class="demo-container">
 			<div id="placeholder" class="demo-placeholder" style="float: left; width: 675px; padding: 0px; position: relative;">
@@ -129,9 +150,13 @@ return a.setAttribute("type",b),c&&(a.value=c),b}}}}}),Zb={set:function(a,b,c){r
 					<div style="position: absolute; width: 80px; height: 152px; top: 13px; right: 17px; opacity: 0.85; background-color: rgb(255, 255, 255);"></div>
 				</div>
 			</div>
-			<div id="legendContainer" style="float: left;width:500px;overflow-x: scroll;"></div>
+			<div id="legendContainer" style="float: left;width:500px;overflow-x: scroll;height:420px"></div>
 		</div>
 		<div class="choices" id="choices" style="float:bottom; "/>
 	</div>
+	
+	{% if bot_txt %}
+		<p>{{bot_txt}}</p>
+	{% endif %}
 </body>
 </html>
